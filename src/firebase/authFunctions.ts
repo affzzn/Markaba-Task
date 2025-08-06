@@ -4,28 +4,35 @@ import {
   signOut,
   GithubAuthProvider,
   fetchSignInMethodsForEmail,
+  type AuthProvider,
 } from "firebase/auth";
 
 import { auth } from "./firebaseConfig";
 import { FirebaseError } from "firebase/app";
 
 const googleProvider = new GoogleAuthProvider();
+const githubProvider = new GithubAuthProvider();
+
+// common funct
+const signInWithProvider = async (provider: AuthProvider) => {
+  const result = await signInWithPopup(auth, provider);
+  const firebaseUser = result.user;
+
+  const token = await firebaseUser.getIdToken();
+
+  const user = {
+    name: firebaseUser.displayName,
+    email: firebaseUser.email,
+    photoURL: firebaseUser.photoURL,
+  };
+
+  return { user, token };
+};
 
 // google login
 export const googleSignIn = async () => {
   try {
-    const result = await signInWithPopup(auth, googleProvider);
-    const firebaseUser = result.user;
-
-    const token = await firebaseUser.getIdToken();
-
-    const user = {
-      name: firebaseUser.displayName,
-      email: firebaseUser.email,
-      photoURL: firebaseUser.photoURL,
-    };
-
-    return { user, token };
+    return await signInWithProvider(googleProvider);
   } catch (error) {
     console.error("Google Sign-In Error:", error);
     throw error;
@@ -42,22 +49,9 @@ export const logout = async (): Promise<void> => {
 
 // github login
 
-const githubProvider = new GithubAuthProvider();
-
 export const githubSignIn = async () => {
   try {
-    const result = await signInWithPopup(auth, githubProvider);
-    const firebaseUser = result.user;
-
-    const token = await firebaseUser.getIdToken();
-
-    const user = {
-      name: firebaseUser.displayName,
-      email: firebaseUser.email,
-      photoURL: firebaseUser.photoURL,
-    };
-
-    return { user, token };
+    return await signInWithProvider(githubProvider);
   } catch (error) {
     if (
       error instanceof FirebaseError &&
