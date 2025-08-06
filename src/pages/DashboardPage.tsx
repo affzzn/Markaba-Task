@@ -1,24 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { logout } from "../firebase/authFunctions";
+import React from "react";
+import { useAuth } from "../context/useAuth";
 import { useNavigate } from "react-router-dom";
 
-interface User {
-  name: string | null;
-  email: string | null;
-  photoURL: string | null;
-}
-
 const DashboardPage: React.FC = () => {
-  const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
 
-  // fetching user inf
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, []);
+  const { user, logout } = useAuth();
 
   const handleLogout = async () => {
     await logout();
@@ -33,6 +20,7 @@ const DashboardPage: React.FC = () => {
         <img
           src={user.photoURL ?? ""}
           alt="Profile"
+          referrerPolicy="no-referrer"
           className="w-24 h-24 rounded-full mx-auto mb-4"
         />
         <h2 className="text-xl font-bold">{user.name}</h2>

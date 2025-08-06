@@ -15,22 +15,15 @@ const googleProvider = new GoogleAuthProvider();
 export const googleSignIn = async () => {
   try {
     const result = await signInWithPopup(auth, googleProvider);
-    const user = result.user;
+    const firebaseUser = result.user;
 
-    console.log("signed in:", user);
+    const token = await firebaseUser.getIdToken();
 
-    const token = await user.getIdToken();
-
-    console.log("token:", token);
-    localStorage.setItem("token", token);
-    localStorage.setItem(
-      "user",
-      JSON.stringify({
-        name: user.displayName,
-        email: user.email,
-        photoURL: user.photoURL,
-      })
-    );
+    const user = {
+      name: firebaseUser.displayName,
+      email: firebaseUser.email,
+      photoURL: firebaseUser.photoURL,
+    };
 
     return { user, token };
   } catch (error) {
@@ -40,7 +33,7 @@ export const googleSignIn = async () => {
 };
 
 //logout
-export const logout = async () => {
+export const logout = async (): Promise<void> => {
   await signOut(auth);
 
   localStorage.removeItem("token");
@@ -54,18 +47,15 @@ const githubProvider = new GithubAuthProvider();
 export const githubSignIn = async () => {
   try {
     const result = await signInWithPopup(auth, githubProvider);
-    const user = result.user;
-    const token = await user.getIdToken();
+    const firebaseUser = result.user;
 
-    localStorage.setItem("token", token);
-    localStorage.setItem(
-      "user",
-      JSON.stringify({
-        name: user.displayName,
-        email: user.email,
-        photoURL: user.photoURL,
-      })
-    );
+    const token = await firebaseUser.getIdToken();
+
+    const user = {
+      name: firebaseUser.displayName,
+      email: firebaseUser.email,
+      photoURL: firebaseUser.photoURL,
+    };
 
     return { user, token };
   } catch (error) {

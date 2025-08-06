@@ -2,20 +2,28 @@ import React, { useState } from "react";
 import { githubSignIn, googleSignIn } from "../firebase/authFunctions";
 import { useNavigate } from "react-router-dom";
 
+import { useAuth } from "../context/useAuth";
+
 const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
+  const { login } = useAuth();
+
   const handleLogin = async (provider: "google" | "github") => {
     setLoading(true);
     setError(null);
+
+    let authResult;
     try {
       if (provider === "google") {
-        await googleSignIn();
+        authResult = await googleSignIn();
       } else {
-        await githubSignIn();
+        authResult = await githubSignIn();
       }
+
+      login(authResult.user, authResult.token);
       navigate("/dashboard");
     } catch (error: unknown) {
       if (error instanceof Error) {
