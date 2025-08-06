@@ -12,14 +12,13 @@ const DashboardPage: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
 
+  // fetching user inf
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
-    } else {
-      navigate("/login");
     }
-  }, [navigate]);
+  }, []);
 
   const handleLogout = async () => {
     await logout();
