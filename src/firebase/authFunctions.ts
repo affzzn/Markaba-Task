@@ -3,9 +3,11 @@ import {
   signInWithPopup,
   signOut,
   GithubAuthProvider,
+  fetchSignInMethodsForEmail,
 } from "firebase/auth";
 
 import { auth } from "./firebaseConfig";
+import { FirebaseError } from "firebase/app";
 
 const googleProvider = new GoogleAuthProvider();
 
@@ -67,6 +69,23 @@ export const githubSignIn = async () => {
 
     return { user, token };
   } catch (error) {
+    if (
+      error instanceof FirebaseError &&
+      error.code === "auth/account-exists-with-different-credential"
+    ) {
+      const pendingCred = GithubAuthProvider.credentialFromError(error);
+      const email = error.customData?.email as string | undefined;
+
+      if (email && pendingCred) {
+        const methods = await fetchSignInMethodsForEmail(auth, email);
+        if (methods.includes("google.com")) {
+          throw new Error("This email is already used with Google.");
+        } else {
+          throw new Error("This email is already used with another provider.");
+        }
+      }
+    }
+
     console.error("GitHub Sign-In Error:", error);
     throw error;
   }
