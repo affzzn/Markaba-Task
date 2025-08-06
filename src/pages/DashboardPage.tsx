@@ -1,9 +1,12 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/useAuth";
 import { useNavigate } from "react-router-dom";
+import { fetchTopHeadlines, type NewsArticle } from "../api/newsService";
 
 const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
+  const [news, setNews] = useState<NewsArticle[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const { user, logout } = useAuth();
 
@@ -12,11 +15,18 @@ const DashboardPage: React.FC = () => {
     navigate("/login");
   };
 
+  useEffect(() => {
+    fetchTopHeadlines()
+      .then(setNews)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
+
   if (!user) return null;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded shadow-md w-96 text-center">
+    <div className="min-h-screen p-8 bg-gray-100 space-y-8">
+      <div className="bg-white p-8 rounded shadow-md w-full max-w-md mx-auto text-center">
         <img
           src={user.photoURL ?? ""}
           alt="Profile"
@@ -31,6 +41,31 @@ const DashboardPage: React.FC = () => {
         >
           Logout
         </button>
+      </div>
+
+      <div className="bg-white p-6 rounded shadow-md max-w-2xl mx-auto">
+        <h3 className="text-xl font-semibold mb-4">Top News Headlines</h3>
+        {loading ? (
+          <p>Loading news...</p>
+        ) : (
+          <ul className="space-y-4">
+            {news.map((article, idx) => (
+              <li key={idx} className="border-b pb-2">
+                <a
+                  href={article.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  {article.title}
+                </a>
+                <p className="text-sm text-gray-500">
+                  {article.pubDate} — {article.source_id}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
   );
